@@ -87,7 +87,7 @@ const Form = () => {
 
       <ApiKeyField
         id="llmgateway"
-        label="LLM Gateway API Key"
+        label="LLMGateway API Key"
         models={['Claude 3.7 Sonnet', 'Claude 3.5 Sonnet']}
         linkUrl="https://llmgateway.io/signup"
         placeholder="llmgtwy_..."
