@@ -1,7 +1,7 @@
 import { create, Mutate, StoreApi } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export const PROVIDERS = ['google', 'openrouter', 'openai'] as const;
+export const PROVIDERS = ['google', 'openrouter', 'llmgateway', 'openai'] as const;
 export type Provider = (typeof PROVIDERS)[number];
 
 type APIKeys = Record<Provider, string>;
@@ -38,6 +38,7 @@ export const useAPIKeyStore = create<APIKeyStore>()(
       keys: {
         google: '',
         openrouter: '',
+        llmgateway: '',
         openai: '',
       },
 
