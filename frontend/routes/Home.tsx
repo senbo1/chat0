@@ -1,4 +1,4 @@
-import APIKeyManager from '@/frontend/components/APIKeyForm';
+import Onboarding from '@/frontend/components/Onboarding';
 import Chat from '@/frontend/components/Chat';
 import { v4 as uuidv4 } from 'uuid';
 import { useAPIKeyStore } from '../stores/APIKeyStore';
@@ -12,12 +12,9 @@ export default function Home() {
 
   if (!isAPIKeysHydrated || !isModelStoreHydrated) return null;
 
-  if (!hasRequiredKeys)
-    return (
-      <div className="flex flex-col items-center justify-center w-full h-full max-w-3xl pt-10 pb-44 mx-auto">
-        <APIKeyManager />
-      </div>
-    );
+  if (!hasRequiredKeys) {
+    return <Onboarding />;
+  }
 
   return <Chat threadId={uuidv4()} initialMessages={[]} />;
 }
