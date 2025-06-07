@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import { Toaster } from '@/frontend/components/ui/sonner';
 import { ThemeProvider } from '@/frontend/components/ui/ThemeProvider';
 import { Analytics } from '@vercel/analytics/react';
+import { PWAInstallPrompt } from '@/frontend/components/PWAInstallPrompt';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -19,6 +20,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Chat0',
   description: 'Fastest AI Chat App',
+  manifest: '/manifest.json',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' }
+  ],
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Chat0'
+  }
 };
 
 export default function RootLayout({
@@ -39,6 +51,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors position="top-right" />
+          <PWAInstallPrompt />
         </ThemeProvider>
         <Analytics />
       </body>
