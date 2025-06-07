@@ -57,7 +57,7 @@ function GlobalSidebarToggleButton() {
       )}
       aria-label="Toggle Sidebar" 
     >
-      <PanelLeftIcon className="h-5 w-5" /> 
+      <PanelLeftIcon className="size-4" /> 
     </Button>
   );
 }
