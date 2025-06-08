@@ -67,8 +67,9 @@ const Form = () => {
   });
 
   useEffect(() => {
-    reset(keys);
-  }, [keys, reset]);
+    // ensure the LiteLLM Base URL stays in sync with store (including after re-hydration)
+    reset({ ...keys, liteBaseUrl: baseUrl });
+  }, [keys, baseUrl, reset]);
 
   const onSubmit = useCallback(
     async (values: FormValues) => {
