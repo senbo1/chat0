@@ -8,6 +8,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
 } from '@/frontend/components/ui/dropdown-menu';
 import useAutoResizeTextarea from '@/hooks/useAutoResizeTextArea';
 import { UseChatHelpers, useCompletion } from '@ai-sdk/react';
@@ -187,6 +190,7 @@ const ChatInput = memo(PureChatInput, (prevProps, nextProps) => {
 const PureChatModelDropdown = () => {
   const getKey = useAPIKeyStore((state) => state.getKey);
   const { selectedModel, setModel } = useModelStore();
+  const navigate = useNavigate();
 
   const isModelEnabled = useCallback(
     (model: AIModel) => {
@@ -196,6 +200,35 @@ const PureChatModelDropdown = () => {
     },
     [getKey]
   );
+
+  const groupedModels = useMemo(() => {
+    const groups: Record<string, { models: AIModel[]; hasApiKey: boolean; keyStatus: string }> = {};
+    
+    AI_MODELS.forEach((model) => {
+      const config = getModelConfig(model);
+      const provider = config.provider;
+      const apiKey = getKey(provider);
+      const hasKey = !!apiKey;
+      
+      if (!groups[provider]) {
+        groups[provider] = {
+          models: [],
+          hasApiKey: hasKey,
+          keyStatus: hasKey ? `API key configured` : 'No API key'
+        };
+      }
+      
+      groups[provider].models.push(model);
+    });
+    
+    return groups;
+  }, [getKey]);
+
+  const providerDisplayNames = {
+    google: 'Google AI',
+    openai: 'OpenAI',
+    openrouter: 'OpenRouter'
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -213,30 +246,53 @@ const PureChatModelDropdown = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className={cn('min-w-[10rem]', 'border-border', 'bg-popover')}
+          className={cn('min-w-[14rem]', 'border-border', 'bg-popover')}
         >
-          {AI_MODELS.map((model) => {
-            const isEnabled = isModelEnabled(model);
-            return (
-              <DropdownMenuItem
-                key={model}
-                onSelect={() => isEnabled && setModel(model)}
-                disabled={!isEnabled}
+          {Object.entries(groupedModels).map(([provider, group], index) => (
+            <DropdownMenuGroup key={provider}>
+              <DropdownMenuLabel 
                 className={cn(
-                  'flex items-center justify-between gap-2',
-                  'cursor-pointer'
+                  "flex items-center justify-between px-2 py-1.5",
+                  !group.hasApiKey && "cursor-pointer hover:bg-accent/50 transition-colors"
                 )}
+                onClick={!group.hasApiKey ? () => navigate('/settings') : undefined}
               >
-                <span>{model}</span>
-                {selectedModel === model && (
-                  <Check
-                    className="w-4 h-4 text-blue-500"
-                    aria-label="Selected"
-                  />
+                <span className="text-sm font-medium">
+                  {providerDisplayNames[provider as keyof typeof providerDisplayNames]}
+                </span>
+                {!group.hasApiKey && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground hover:bg-muted/80">
+                    Click to configure
+                  </span>
                 )}
-              </DropdownMenuItem>
-            );
-          })}
+              </DropdownMenuLabel>
+              {group.models.map((model) => {
+                const isEnabled = isModelEnabled(model);
+                return (
+                  <DropdownMenuItem
+                    key={model}
+                    onSelect={() => isEnabled && setModel(model)}
+                    disabled={!isEnabled}
+                    className={cn(
+                      'flex items-center justify-between gap-2',
+                      'cursor-pointer ml-2'
+                    )}
+                  >
+                    <span>{model}</span>
+                    {selectedModel === model && (
+                      <Check
+                        className="w-4 h-4 text-blue-500"
+                        aria-label="Selected"
+                      />
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+              {index < Object.keys(groupedModels).length - 1 && (
+                <DropdownMenuSeparator />
+              )}
+            </DropdownMenuGroup>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
