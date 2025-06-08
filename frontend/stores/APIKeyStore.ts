@@ -48,8 +48,15 @@ export const useAPIKeyStore = create<APIKeyStore>()(
         }));
       },
 
+      /**
+       * Previously the application enforced that a Google (Gemini) key
+       * must be present before any chat functionality could be used.
+       * This hard-coded requirement has been removed.  The application
+       * can now operate without *any* API keys; features that need a
+       * specific provider key will fail gracefully at their own call-site.
+       */
       hasRequiredKeys: () => {
-        return !!get().keys.google;
+        return true;
       },
 
       getKey: (provider) => {

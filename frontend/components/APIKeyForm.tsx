@@ -19,10 +19,12 @@ import { useModelStore } from '@/frontend/stores/ModelStore';
 import { fetchCustomModels } from '@/frontend/lib/api';
 import { Badge } from './ui/badge';
 
+/**
+ * All provider keys are now optional. A Google (Gemini) key is
+ * no longer mandatory for basic application functionality.
+ */
 const formSchema = z.object({
-  google: z.string().trim().min(1, {
-    message: 'Google API key is required for Title Generation',
-  }),
+  google: z.string().trim().optional(),
   openrouter: z.string().trim().optional(),
   openai: z.string().trim().optional(),
   litellm: z.string().trim().optional(),
@@ -102,7 +104,6 @@ const Form = () => {
         placeholder="AIza..."
         register={register}
         error={errors.google}
-        required
       />
 
       <ApiKeyField

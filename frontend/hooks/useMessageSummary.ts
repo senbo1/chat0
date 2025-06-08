@@ -3,6 +3,7 @@ import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { useModelStore } from '@/frontend/stores/ModelStore';
 import { toast } from 'sonner';
 import { createMessageSummary, updateThread } from '@/frontend/dexie/queries';
+import { getModelConfig, AIModel } from '@/lib/models';
 
 interface MessageSummaryPayload {
   title: string;
@@ -49,7 +50,14 @@ export const useMessageSummary = () => {
   });
 
   // Wrap complete to always include the summaryModel in the payload
+  // If the chosen summary model's provider lacks an API key, skip the call
   const complete = (prompt: string, options?: any) => {
+    const modelConfig = getModelConfig(summaryModel as AIModel);
+    const providerKey = getKey(modelConfig.provider);
+    if (!providerKey) {
+      // No key for the provider – silently skip summary generation
+      return Promise.resolve(undefined);
+    }
     const body = { ...options?.body, model: summaryModel };
     return baseComplete(prompt, { ...options, body });
   };
