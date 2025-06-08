@@ -15,14 +15,20 @@ import {
 import { Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
+import { useModelStore } from '@/frontend/stores/ModelStore';
+import { fetchCustomModels } from '@/frontend/lib/api';
 import { Badge } from './ui/badge';
 
+/**
+ * All provider keys are now optional. A Google (Gemini) key is
+ * no longer mandatory for basic application functionality.
+ */
 const formSchema = z.object({
-  google: z.string().trim().min(1, {
-    message: 'Google API key is required for Title Generation',
-  }),
+  google: z.string().trim().optional(),
   openrouter: z.string().trim().optional(),
   openai: z.string().trim().optional(),
+  litellm: z.string().trim().optional(),
+  liteBaseUrl: z.string().trim().url().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -48,6 +54,9 @@ export default function APIKeyForm() {
 
 const Form = () => {
   const { keys, setKeys } = useAPIKeyStore();
+  const baseUrl = useModelStore((st) => st.liteLLM.baseUrl);
+  const setBaseUrl = useModelStore((st) => st.setLiteLLMBaseUrl);
+  const setCustomModels = useModelStore((state) => state.setCustomModels);
 
   const {
     register,
@@ -56,19 +65,33 @@ const Form = () => {
     reset,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: keys,
+    defaultValues: { ...keys, liteBaseUrl: baseUrl },
   });
 
   useEffect(() => {
-    reset(keys);
-  }, [keys, reset]);
+    // ensure the LiteLLM Base URL stays in sync with store (including after re-hydration)
+    reset({ ...keys, liteBaseUrl: baseUrl });
+  }, [keys, baseUrl, reset]);
 
   const onSubmit = useCallback(
-    (values: FormValues) => {
-      setKeys(values);
-      toast.success('API keys saved successfully');
+    async (values: FormValues) => {
+      const { liteBaseUrl, ...keyValues } = values as any;
+      setKeys(keyValues);
+      if (liteBaseUrl) {
+        setBaseUrl(liteBaseUrl);
+        try {
+          const models = await fetchCustomModels(
+            liteBaseUrl,
+            keyValues.litellm ?? ''
+          );
+          setCustomModels(models);
+        } catch (err) {
+          console.error('Failed to fetch LiteLLM models', err);
+        }
+      }
+      toast.success('Settings saved successfully');
     },
-    [setKeys]
+    [setKeys, setBaseUrl, setCustomModels]
   );
 
   return (
@@ -81,7 +104,6 @@ const Form = () => {
         placeholder="AIza..."
         register={register}
         error={errors.google}
-        required
       />
 
       <ApiKeyField
@@ -103,6 +125,36 @@ const Form = () => {
         register={register}
         error={errors.openai}
       />
+
+      <ApiKeyField
+        id="litellm"
+        label="LiteLLM API Key"
+        models={['Any OpenAI-compatible']}
+        linkUrl="https://github.com/BerriAI/litellm"
+        placeholder="sk-..."
+        register={register}
+        error={errors.litellm}
+      />
+
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="liteBaseUrl"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex gap-1"
+        >
+          <span>LiteLLM Base URL</span>
+        </label>
+        <Input
+          id="liteBaseUrl"
+          placeholder="https://llm.example.com"
+          {...register('liteBaseUrl' as keyof FormValues)}
+          className={errors.liteBaseUrl ? 'border-red-500' : ''}
+        />
+        {errors.liteBaseUrl && (
+          <p className="text-[0.8rem] font-medium text-red-500">
+            {errors.liteBaseUrl.message}
+          </p>
+        )}
+      </div>
 
       <Button type="submit" className="w-full" disabled={!isDirty}>
         Save API Keys

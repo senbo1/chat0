@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router';
 import { createMessage, createThread } from '@/frontend/dexie/queries';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { useModelStore } from '@/frontend/stores/ModelStore';
-import { AI_MODELS, AIModel, getModelConfig } from '@/lib/models';
+import { AIModel, getModelConfig } from '@/lib/models';
 import KeyPrompt from '@/frontend/components/KeyPrompt';
 import { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
@@ -186,7 +186,7 @@ const ChatInput = memo(PureChatInput, (prevProps, nextProps) => {
 
 const PureChatModelDropdown = () => {
   const getKey = useAPIKeyStore((state) => state.getKey);
-  const { selectedModel, setModel } = useModelStore();
+  const { selectedModel, setModel, models } = useModelStore();
 
   const isModelEnabled = useCallback(
     (model: AIModel) => {
@@ -215,7 +215,7 @@ const PureChatModelDropdown = () => {
         <DropdownMenuContent
           className={cn('min-w-[10rem]', 'border-border', 'bg-popover')}
         >
-          {AI_MODELS.map((model) => {
+          {models.map((model) => {
             const isEnabled = isModelEnabled(model);
             return (
               <DropdownMenuItem
