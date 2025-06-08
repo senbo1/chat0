@@ -3,6 +3,7 @@ import { useAPIKeyStore } from "@/frontend/stores/APIKeyStore";
 import { toast } from "sonner";
 import { createMessageSummary, updateThread } from "@/frontend/dexie/queries";
 import { useTitleLoadingStore } from "@/frontend/stores/TitleLoadingStore";
+import { getProviderHeaderKey } from "@/lib/models";
 
 interface MessageSummaryPayload {
   title: string;
@@ -23,13 +24,7 @@ export const useMessageSummary = () => {
     api: "/api/completion",
     headers: availableKey
       ? {
-          [`X-${
-            availableKey.provider === "google"
-              ? "Google"
-              : availableKey.provider === "openai"
-              ? "OpenAI"
-              : "OpenRouter"
-          }-API-Key`]: availableKey.key,
+          [getProviderHeaderKey(availableKey.provider)]: availableKey.key,
         }
       : {},
     onResponse: async (response) => {
