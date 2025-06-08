@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createLiteLLM } from '@/lib/providers/litellm';
 import { streamText, smoothStream } from 'ai';
 import { headers } from 'next/headers';
 import { getModelConfig, AIModel } from '@/lib/models';
@@ -32,6 +33,17 @@ export async function POST(req: NextRequest) {
       case 'openrouter':
         const openrouter = createOpenRouter({ apiKey });
         aiModel = openrouter(modelConfig.modelId);
+        break;
+
+      case 'litellm':
+        const baseURL =
+          headersList.get('X-LiteLLM-Base-Url') ??
+          process.env.LITELLM_BASE_URL;
+        const litellm = createLiteLLM({
+          apiKey,
+          baseURL: baseURL || undefined,
+        });
+        aiModel = litellm(modelConfig.modelId);
         break;
 
       default:

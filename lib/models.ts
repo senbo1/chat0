@@ -9,7 +9,7 @@ export const AI_MODELS = [
   'GPT-4.1-mini',
 ] as const;
 
-export type AIModel = (typeof AI_MODELS)[number];
+export type AIModel = string;
 
 export type ModelConfig = {
   modelId: string;
@@ -50,6 +50,15 @@ export const MODEL_CONFIGS = {
   },
 } as const satisfies Record<AIModel, ModelConfig>;
 
-export const getModelConfig = (modelName: AIModel): ModelConfig => {
-  return MODEL_CONFIGS[modelName];
+export const getModelConfig = (modelName: string): ModelConfig => {
+  const existing = (MODEL_CONFIGS as Record<string, ModelConfig>)[modelName];
+  if (existing) {
+    return existing;
+  }
+  // Fallback for dynamically fetched LiteLLM models
+  return {
+    modelId: modelName,
+    provider: 'litellm',
+    headerKey: 'X-LiteLLM-API-Key',
+  };
 };

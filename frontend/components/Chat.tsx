@@ -12,6 +12,8 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { Button } from './ui/button';
 import { MessageSquareMore } from 'lucide-react';
 import { useChatNavigator } from '@/frontend/hooks/useChatNavigator';
+import { useLiteLLMConfigStore } from '@/frontend/stores/LiteLLMConfigStore';
+import { useMemo } from 'react';
 
 interface ChatProps {
   threadId: string;
@@ -21,7 +23,23 @@ interface ChatProps {
 export default function Chat({ threadId, initialMessages }: ChatProps) {
   const { getKey } = useAPIKeyStore();
   const selectedModel = useModelStore((state) => state.selectedModel);
-  const modelConfig = useModelStore((state) => state.getModelConfig());
+  const getModelConfig = useModelStore((state) => state.getModelConfig);
+  const modelConfig = useMemo(() => getModelConfig(), [getModelConfig, selectedModel]);
+
+  // LiteLLM config
+  const { baseUrl } = useLiteLLMConfigStore();
+
+  // Construct headers dynamically to include LiteLLM Base URL when applicable
+  const headers = useMemo(() => {
+    const apiKeyHeader = {
+      [modelConfig.headerKey]: getKey(modelConfig.provider) || '',
+    };
+
+    if (modelConfig.provider === 'litellm' && baseUrl) {
+      return { ...apiKeyHeader, 'X-LiteLLM-Base-Url': baseUrl };
+    }
+    return apiKeyHeader;
+  }, [modelConfig, getKey, baseUrl]);
 
   const {
     isNavigatorVisible,
@@ -60,9 +78,7 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
         console.error(error);
       }
     },
-    headers: {
-      [modelConfig.headerKey]: getKey(modelConfig.provider) || '',
-    },
+    headers,
     body: {
       model: selectedModel,
     },
