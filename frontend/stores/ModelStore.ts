@@ -12,14 +12,31 @@ type ModelStore = {
    * Combined list that powers the dropdown. (AI_MODELS + customModels)
    */
   models: string[];
+
+  /**
+   * LiteLLM specific configuration
+   */
+  liteLLM: {
+    baseUrl: string;
+  };
+
   setModel: (model: string) => void;
   setCustomModels: (models: string[]) => void;
+
+  setLiteLLMBaseUrl: (url: string) => void;
+  getLiteLLMBaseUrl: () => string;
+
   getModelConfig: () => ModelConfig;
 };
 
 type StoreWithPersist = Mutate<
   StoreApi<ModelStore>,
-  [['zustand/persist', { selectedModel: string; customModels: string[] }]]
+  [
+    [
+      'zustand/persist',
+      { selectedModel: string; customModels: string[]; liteLLM: { baseUrl: string } }
+    ]
+  ]
 >;
 
 export const withStorageDOMEvents = (store: StoreWithPersist) => {
@@ -42,18 +59,27 @@ export const useModelStore = create<ModelStore>()(
       selectedModel: 'Gemini 2.5 Flash',
       customModels: [],
       models: [...AI_MODELS],
- 
+      liteLLM: { baseUrl: '' },
+
       setModel: (model) => {
         set({ selectedModel: model });
       },
- 
+
       setCustomModels: (models) => {
         set((state) => ({
           customModels: models,
           models: [...AI_MODELS, ...models],
         }));
       },
- 
+
+      setLiteLLMBaseUrl: (url) => {
+        set((state) => ({
+          liteLLM: { ...state.liteLLM, baseUrl: url },
+        }));
+      },
+
+      getLiteLLMBaseUrl: () => get().liteLLM.baseUrl,
+
       getModelConfig: () => {
         const { selectedModel } = get();
         return getModelConfig(selectedModel);
@@ -64,6 +90,7 @@ export const useModelStore = create<ModelStore>()(
       partialize: (state) => ({
         selectedModel: state.selectedModel,
         customModels: state.customModels,
+        liteLLM: state.liteLLM,
       }),
     }
   )

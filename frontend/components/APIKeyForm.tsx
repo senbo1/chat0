@@ -15,7 +15,6 @@ import {
 import { Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
-import { useLiteLLMConfigStore } from '@/frontend/stores/LiteLLMConfigStore';
 import { useModelStore } from '@/frontend/stores/ModelStore';
 import { fetchCustomModels } from '@/frontend/lib/api';
 import { Badge } from './ui/badge';
@@ -53,7 +52,8 @@ export default function APIKeyForm() {
 
 const Form = () => {
   const { keys, setKeys } = useAPIKeyStore();
-  const { baseUrl, setBaseUrl } = useLiteLLMConfigStore();
+  const baseUrl = useModelStore((st) => st.liteLLM.baseUrl);
+  const setBaseUrl = useModelStore((st) => st.setLiteLLMBaseUrl);
   const setCustomModels = useModelStore((state) => state.setCustomModels);
 
   const {

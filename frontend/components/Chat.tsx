@@ -12,7 +12,6 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { Button } from './ui/button';
 import { MessageSquareMore } from 'lucide-react';
 import { useChatNavigator } from '@/frontend/hooks/useChatNavigator';
-import { useLiteLLMConfigStore } from '@/frontend/stores/LiteLLMConfigStore';
 import { useMemo } from 'react';
 
 interface ChatProps {
@@ -27,7 +26,7 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
   const modelConfig = useMemo(() => getModelConfig(), [getModelConfig, selectedModel]);
 
   // LiteLLM config
-  const { baseUrl } = useLiteLLMConfigStore();
+  const baseUrl = useModelStore((st) => st.liteLLM.baseUrl);
 
   // Construct headers dynamically to include LiteLLM Base URL when applicable
   const headers = useMemo(() => {
