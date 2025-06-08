@@ -1,5 +1,6 @@
 import { useCompletion } from '@ai-sdk/react';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
+import { useModelStore } from '@/frontend/stores/ModelStore';
 import { toast } from 'sonner';
 import { createMessageSummary, updateThread } from '@/frontend/dexie/queries';
 
@@ -12,12 +13,19 @@ interface MessageSummaryPayload {
 
 export const useMessageSummary = () => {
   const getKey = useAPIKeyStore((state) => state.getKey);
+  const { summaryModel, getLiteLLMBaseUrl } = useModelStore();
 
-  const { complete, isLoading } = useCompletion({
+  const { complete: baseComplete, isLoading } = useCompletion({
     api: '/api/completion',
-    ...(getKey('google') && {
-      headers: { 'X-Google-API-Key': getKey('google')! },
-    }),
+    headers: Object.fromEntries(
+      Object.entries({
+        'X-Google-API-Key': getKey('google'),
+        'X-OpenAI-API-Key': getKey('openai'),
+        'X-OpenRouter-API-Key': getKey('openrouter'),
+        'X-LiteLLM-API-Key': getKey('litellm'),
+        'X-LiteLLM-Base-Url': getLiteLLMBaseUrl(),
+      }).filter(([, value]) => value) as [string, string][]
+    ),
     onResponse: async (response) => {
       try {
         const payload: MessageSummaryPayload = await response.json();
@@ -39,6 +47,12 @@ export const useMessageSummary = () => {
       }
     },
   });
+
+  // Wrap complete to always include the summaryModel in the payload
+  const complete = (prompt: string, options?: any) => {
+    const body = { ...options?.body, model: summaryModel };
+    return baseComplete(prompt, { ...options, body });
+  };
 
   return {
     complete,

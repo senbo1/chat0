@@ -5,6 +5,10 @@ import { AIModel, getModelConfig, ModelConfig, AI_MODELS } from '@/lib/models';
 type ModelStore = {
   selectedModel: string;
   /**
+   * Model used for generating chat summaries/titles.
+   */
+  summaryModel: string;
+  /**
    * Models returned by LiteLLM `/v1/models` in addition to the predefined list.
    */
   customModels: string[];
@@ -21,6 +25,7 @@ type ModelStore = {
   };
 
   setModel: (model: string) => void;
+  setSummaryModel: (model: string) => void;
   setCustomModels: (models: string[]) => void;
 
   setLiteLLMBaseUrl: (url: string) => void;
@@ -39,7 +44,17 @@ type StoreWithPersist = Mutate<
   ]
 >;
 
-export const withStorageDOMEvents = (store: StoreWithPersist) => {
+type StoreWithPersistV2 = Mutate<
+  StoreApi<ModelStore>,
+  [
+    [
+      'zustand/persist',
+      { selectedModel: string; summaryModel: string; customModels: string[]; liteLLM: { baseUrl: string } }
+    ]
+  ]
+>;
+
+export const withStorageDOMEvents = (store: StoreWithPersistV2) => {
   const storageEventCallback = (e: StorageEvent) => {
     if (e.key === store.persist.getOptions().name && e.newValue) {
       store.persist.rehydrate();
@@ -57,12 +72,17 @@ export const useModelStore = create<ModelStore>()(
   persist(
     (set, get) => ({
       selectedModel: 'Gemini 2.5 Flash',
+      summaryModel: 'Gemini 2.5 Flash',
       customModels: [],
       models: [...AI_MODELS],
       liteLLM: { baseUrl: '' },
 
       setModel: (model) => {
         set({ selectedModel: model });
+      },
+
+      setSummaryModel: (model) => {
+        set({ summaryModel: model });
       },
 
       setCustomModels: (models) => {
@@ -89,6 +109,7 @@ export const useModelStore = create<ModelStore>()(
       name: 'model-store',
       partialize: (state) => ({
         selectedModel: state.selectedModel,
+        summaryModel: state.summaryModel,
         customModels: state.customModels,
         liteLLM: state.liteLLM,
       }),
@@ -102,4 +123,4 @@ export const useModelStore = create<ModelStore>()(
   )
 );
 
-withStorageDOMEvents(useModelStore);
+withStorageDOMEvents(useModelStore as unknown as StoreWithPersistV2);
