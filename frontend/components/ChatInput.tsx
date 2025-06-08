@@ -284,13 +284,15 @@ const PureSendButton = ({ onSubmit, disabled }: SendButtonProps) => {
   );
 };
 
-const ScrollButton = ({ scrollToBottom }: ScrollButtonProps) => {
+const PureScrollButton = ({ scrollToBottom }: ScrollButtonProps) => {
   return (
     <Button className="rounded-full h-8 w-8" variant="default" size="icon" onClick={scrollToBottom} aria-label="Scroll to bottom">
       <ArrowDownIcon size={18} />
     </Button>
   );
 };
+
+const ScrollButton = memo(PureScrollButton);
 
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   return prevProps.disabled === nextProps.disabled;
