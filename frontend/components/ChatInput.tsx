@@ -23,6 +23,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { StopIcon } from './ui/icons';
 import { toast } from 'sonner';
 import { useMessageSummary } from '../hooks/useMessageSummary';
+import { useAutoSelectModel } from '../hooks/useAutoSelectModel';
+import { useTitleLoadingStore } from '../stores/TitleLoadingStore';
 
 interface ChatInputProps {
   threadId: string;
@@ -59,6 +61,7 @@ function PureChatInput({
   stop,
 }: ChatInputProps) {
   const canChat = useAPIKeyStore((state) => state.hasRequiredKeys());
+  useAutoSelectModel();
 
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 72,
