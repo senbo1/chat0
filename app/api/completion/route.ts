@@ -1,4 +1,5 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -6,25 +7,41 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
   const headersList = await headers();
   const googleApiKey = headersList.get('X-Google-API-Key');
+  const openaiApiKey = headersList.get('X-OpenAI-API-Key');
+  const openrouterApiKey = headersList.get('X-OpenRouter-API-Key');
 
-  if (!googleApiKey) {
+  const { prompt, isTitle, messageId, threadId } = await req.json();
+
+  let model;
+  
+  if (googleApiKey) {
+    const google = createGoogleGenerativeAI({
+      apiKey: googleApiKey,
+    });
+    model = google('gemini-2.5-flash-preview-04-17');
+  } else if (openaiApiKey) {
+    const openai = createOpenAI({
+      apiKey: openaiApiKey,
+    });
+    model = openai('gpt-4.1-mini');
+  } else if (openrouterApiKey) {
+    const openrouter = createOpenAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: openrouterApiKey,
+    });
+    model = openrouter('deepseek/deepseek-chat-v3-0324:free');
+  } else {
     return NextResponse.json(
       {
-        error: 'Google API key is required to enable chat title generation.',
+        error: 'At least one API key is required to enable chat title generation.',
       },
       { status: 400 }
     );
   }
 
-  const google = createGoogleGenerativeAI({
-    apiKey: googleApiKey,
-  });
-
-  const { prompt, isTitle, messageId, threadId } = await req.json();
-
   try {
     const { text: title } = await generateText({
-      model: google('gemini-2.5-flash-preview-04-17'),
+      model,
       system: `\n
       - you will generate a short title based on the first message a user begins a conversation with
       - ensure it is not more than 80 characters long

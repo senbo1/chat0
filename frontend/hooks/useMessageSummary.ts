@@ -11,13 +11,15 @@ interface MessageSummaryPayload {
 }
 
 export const useMessageSummary = () => {
-  const getKey = useAPIKeyStore((state) => state.getKey);
+  const getFirstAvailableKey = useAPIKeyStore((state) => state.getFirstAvailableKey);
+
+  const availableKey = getFirstAvailableKey();
 
   const { complete, isLoading } = useCompletion({
     api: '/api/completion',
-    ...(getKey('google') && {
-      headers: { 'X-Google-API-Key': getKey('google')! },
-    }),
+    headers: availableKey ? {
+      [`X-${availableKey.provider === 'google' ? 'Google' : availableKey.provider === 'openai' ? 'OpenAI' : 'OpenRouter'}-API-Key`]: availableKey.key
+    } : {},
     onResponse: async (response) => {
       try {
         const payload: MessageSummaryPayload = await response.json();
