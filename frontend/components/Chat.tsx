@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react';
 import Messages from './Messages';
 import ChatInput from './ChatInput';
@@ -10,7 +13,7 @@ import { useModelStore } from '@/frontend/stores/ModelStore';
 import ThemeToggler from './ui/ThemeToggler';
 import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { Button } from './ui/button';
-import { MessageSquareMore } from 'lucide-react';
+import { MessageSquareMore, ChevronDown } from 'lucide-react';
 import { useChatNavigator } from '@/frontend/hooks/useChatNavigator';
 
 interface ChatProps {
@@ -22,7 +25,7 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
   const { getKey } = useAPIKeyStore();
   const selectedModel = useModelStore((state) => state.selectedModel);
   const modelConfig = useModelStore((state) => state.getModelConfig());
-
+  
   const {
     isNavigatorVisible,
     handleToggleNavigator,
@@ -30,6 +33,9 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
     registerRef,
     scrollToMessage,
   } = useChatNavigator();
+
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false)
+  const isAutoScrolling = useRef(false)
 
   const {
     messages,
@@ -67,6 +73,49 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
       model: selectedModel,
     },
   });
+
+  const scrollToBottom = () => {
+    isAutoScrolling.current = true
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth",
+    })
+    // Reset auto-scrolling flag after animation completes
+    setTimeout(() => {
+      isAutoScrolling.current = false
+    }, 1000)
+  }
+
+  const handleScroll = () => {
+    if (isAutoScrolling.current) return
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
+
+    // Show button when user is more than 200px from bottom
+    const isNearBottom = documentHeight - (scrollTop + windowHeight) < 200
+    setShowScrollToBottom(!isNearBottom)
+  }
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll)
+    handleScroll()
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  useEffect(() => {
+    if (status === "streaming" && messages.length > 0) {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      const isNearBottom = documentHeight - (scrollTop + windowHeight) < 300
+
+      if (isNearBottom) {
+        setTimeout(() => scrollToBottom(), 100)
+      }
+    }
+  }, [messages.length, status])
 
   return (
     <div className="relative w-full">
@@ -107,6 +156,18 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
       >
         <MessageSquareMore className="h-5 w-5" />
       </Button>
+
+      {showScrollToBottom && (
+        <Button
+          onClick={scrollToBottom}
+          variant="outline"
+          size="icon"
+          className="fixed right-4 bottom-24 z-20 shadow-lg bg-background/95 backdrop-blur-sm hover:bg-background border-2"
+          aria-label="Scroll to bottom"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      )}
 
       <ChatNavigator
         threadId={threadId}
