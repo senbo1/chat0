@@ -92,6 +92,12 @@ export const useModelStore = create<ModelStore>()(
         customModels: state.customModels,
         liteLLM: state.liteLLM,
       }),
+      // rebuild combined model list after persisted data are re-hydrated
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.models = [...AI_MODELS, ...(state.customModels ?? [])];
+        }
+      },
     }
   )
 );
