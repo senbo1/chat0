@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import 'katex/dist/katex.min.css';
@@ -19,6 +19,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Chat0',
   description: 'Fastest AI Chat App',
+};
+
+export const viewport: Viewport = {
+  maximumScale: 1,
 };
 
 export default function RootLayout({
