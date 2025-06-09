@@ -70,21 +70,27 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
     },
   });
 
-  const scrollToBottom = useCallback(() => {
-    bottomDivRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = useCallback((behaior: 'auto' | 'smooth') => {
+    bottomDivRef.current?.scrollIntoView({ behavior: behaior});
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-    if (status === 'streaming') {
-      const interval = setInterval(scrollToBottom, 100);
-      return () => clearInterval(interval);
+    if (status === 'submitted') {
+      scrollToBottom('smooth');
     }
-  }, [status]);
+  }, [status, scrollToBottom]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [threadId, messages]);
+    if (!threadId) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom('auto');
+      });
+    });
+  }, [threadId]);
+  useEffect(() => {
+    scrollToBottom('smooth');
+  }, [messages.length]);
 
   useEffect(() => {
     if (!bottomDivRef.current) return;
@@ -123,10 +129,15 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
           append={append}
           setInput={setInput}
           stop={stop}
-          scrollToBottom={scrollToBottom}
+          scrollToBottom={() => scrollToBottom('smooth')}
           isAtBottom={isAtBottom}
         />
-        <div ref={bottomDivRef} />
+        <div
+          ref={bottomDivRef}
+          className={
+            status === 'submitted' || status === 'streaming' ? 'h-[50vh]' : 'h-0'
+          }
+        />
       </main>
       <ThemeToggler />
       <Button
