@@ -22,6 +22,7 @@ const formSchema = z.object({
     message: 'Google API key is required for Title Generation',
   }),
   openrouter: z.string().trim().optional(),
+  llmgateway: z.string().trim().optional(),
   openai: z.string().trim().optional(),
 });
 
@@ -82,6 +83,16 @@ const Form = () => {
         register={register}
         error={errors.google}
         required
+      />
+
+      <ApiKeyField
+        id="llmgateway"
+        label="LLMGateway API Key"
+        models={['Claude 3.7 Sonnet', 'Claude 3.5 Sonnet']}
+        linkUrl="https://llmgateway.io/signup"
+        placeholder="llmgtwy_..."
+        register={register}
+        error={errors.llmgateway}
       />
 
       <ApiKeyField

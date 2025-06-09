@@ -7,6 +7,8 @@ export const AI_MODELS = [
   'Gemini 2.5 Flash',
   'GPT-4o',
   'GPT-4.1-mini',
+  'Claude 3.7 Sonnet',
+  'Claude 3.5 Sonnet'
 ] as const;
 
 export type AIModel = (typeof AI_MODELS)[number];
@@ -18,6 +20,16 @@ export type ModelConfig = {
 };
 
 export const MODEL_CONFIGS = {
+  'Claude 3.7 Sonnet': {
+    modelId: 'claude-3-7-sonnet-20250219',
+    provider: 'llmgateway',
+    headerKey: 'Authorization',
+  },
+  'Claude 3.5 Sonnet': {
+    modelId: 'claude-3-5-sonnet-20241022',
+    provider: 'llmgateway',
+    headerKey: 'Authorization',
+  },
   'Deepseek R1 0528': {
     modelId: 'deepseek/deepseek-r1-0528:free',
     provider: 'openrouter',

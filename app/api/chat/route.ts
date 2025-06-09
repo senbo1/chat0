@@ -1,10 +1,11 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { streamText, smoothStream } from 'ai';
-import { headers } from 'next/headers';
-import { getModelConfig, AIModel } from '@/lib/models';
-import { NextRequest, NextResponse } from 'next/server';
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createLLMGateway } from "@llmgateway/ai-sdk-provider";
+import { streamText, smoothStream } from "ai";
+import { headers } from "next/headers";
+import { getModelConfig, AIModel } from "@/lib/models";
+import { NextRequest, NextResponse } from "next/server";
 
 export const maxDuration = 60;
 
@@ -19,27 +20,32 @@ export async function POST(req: NextRequest) {
 
     let aiModel;
     switch (modelConfig.provider) {
-      case 'google':
+      case "google":
         const google = createGoogleGenerativeAI({ apiKey });
         aiModel = google(modelConfig.modelId);
         break;
 
-      case 'openai':
+      case "openai":
         const openai = createOpenAI({ apiKey });
         aiModel = openai(modelConfig.modelId);
         break;
 
-      case 'openrouter':
+      case "openrouter":
         const openrouter = createOpenRouter({ apiKey });
         aiModel = openrouter(modelConfig.modelId);
         break;
 
+      case "llmgateway":
+        const llmgateway = createLLMGateway({ apiKey });
+        aiModel = llmgateway(modelConfig.modelId);
+        break;
+
       default:
         return new Response(
-          JSON.stringify({ error: 'Unsupported model provider' }),
+          JSON.stringify({ error: "Unsupported model provider" }),
           {
             status: 400,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
           }
         );
     }
@@ -48,7 +54,7 @@ export async function POST(req: NextRequest) {
       model: aiModel,
       messages,
       onError: (error) => {
-        console.log('error', error);
+        console.log("error", error);
       },
       system: `
       You are Chat0, an ai assistant that can answer questions and help with tasks.
@@ -65,9 +71,10 @@ export async function POST(req: NextRequest) {
       - Display: 
       $$\\frac{d}{dx}\\sin(x) = \\cos(x)$$
       `,
-      experimental_transform: [smoothStream({ chunking: 'word' })],
+      experimental_transform: [smoothStream({ chunking: "word" })],
       abortSignal: req.signal,
     });
+
 
     return result.toDataStreamResponse({
       sendReasoning: true,
@@ -76,12 +83,12 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.log('error', error);
+    console.log("error", error);
     return new NextResponse(
-      JSON.stringify({ error: 'Internal Server Error' }),
+      JSON.stringify({ error: "Internal Server Error" }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
