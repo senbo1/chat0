@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createLLMGateway } from "@llmgateway/ai-sdk-provider";
 import { streamText, smoothStream } from "ai";
 import { headers } from "next/headers";
 import { getModelConfig, AIModel } from "@/lib/models";
@@ -35,11 +36,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case "llmgateway":
-        const llmgateway = createOpenAI({
-          baseURL: "https://api.llmgateway.io/v1",
-          apiKey,
-        });
-
+        const llmgateway = createLLMGateway({ apiKey });
         aiModel = llmgateway(modelConfig.modelId);
         break;
 
@@ -77,6 +74,7 @@ export async function POST(req: NextRequest) {
       experimental_transform: [smoothStream({ chunking: "word" })],
       abortSignal: req.signal,
     });
+
 
     return result.toDataStreamResponse({
       sendReasoning: true,

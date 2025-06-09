@@ -21,12 +21,12 @@ export type ModelConfig = {
 
 export const MODEL_CONFIGS = {
   'Claude 3.7 Sonnet': {
-    modelId: 'claude-3-7-sonnet',
+    modelId: 'claude-3-7-sonnet-20250219',
     provider: 'llmgateway',
     headerKey: 'Authorization',
   },
   'Claude 3.5 Sonnet': {
-    modelId: 'claude-3-5-sonnet',
+    modelId: 'claude-3-5-sonnet-20241022',
     provider: 'llmgateway',
     headerKey: 'Authorization',
   },
