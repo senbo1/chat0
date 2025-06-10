@@ -1,7 +1,9 @@
-import { useCompletion } from '@ai-sdk/react';
-import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
-import { toast } from 'sonner';
-import { createMessageSummary, updateThread } from '@/frontend/dexie/queries';
+import { useCompletion } from "@ai-sdk/react";
+import { useAPIKeyStore } from "@/frontend/stores/APIKeyStore";
+import { toast } from "sonner";
+import { createMessageSummary, updateThread } from "@/frontend/dexie/queries";
+import { useTitleLoadingStore } from "@/frontend/stores/TitleLoadingStore";
+import { getProviderHeaderKey } from "@/lib/models";
 
 interface MessageSummaryPayload {
   title: string;
@@ -11,13 +13,20 @@ interface MessageSummaryPayload {
 }
 
 export const useMessageSummary = () => {
-  const getKey = useAPIKeyStore((state) => state.getKey);
+  const getFirstAvailableKey = useAPIKeyStore(
+    (state) => state.getFirstAvailableKey
+  );
+  const setLoading = useTitleLoadingStore((state) => state.setLoading);
+
+  const availableKey = getFirstAvailableKey();
 
   const { complete, isLoading } = useCompletion({
-    api: '/api/completion',
-    ...(getKey('google') && {
-      headers: { 'X-Google-API-Key': getKey('google')! },
-    }),
+    api: "/api/completion",
+    headers: availableKey
+      ? {
+          [getProviderHeaderKey(availableKey.provider)]: availableKey.key,
+        }
+      : {},
     onResponse: async (response) => {
       try {
         const payload: MessageSummaryPayload = await response.json();
@@ -28,11 +37,12 @@ export const useMessageSummary = () => {
           if (isTitle) {
             await updateThread(threadId, title);
             await createMessageSummary(threadId, messageId, title);
+            setLoading(threadId, false);
           } else {
             await createMessageSummary(threadId, messageId, title);
           }
         } else {
-          toast.error('Failed to generate a summary for the message');
+          toast.error("Failed to generate a summary for the message");
         }
       } catch (error) {
         console.error(error);
@@ -40,8 +50,20 @@ export const useMessageSummary = () => {
     },
   });
 
+  const completeWithLoading = (
+    prompt: string,
+    options: {
+      body: { threadId: string; messageId: string; isTitle?: boolean };
+    }
+  ) => {
+    if (options.body.isTitle) {
+      setLoading(options.body.threadId, true);
+    }
+    return complete(prompt, options);
+  };
+
   return {
-    complete,
+    complete: completeWithLoading,
     isLoading,
   };
 };

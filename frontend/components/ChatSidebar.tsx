@@ -13,14 +13,16 @@ import { Button, buttonVariants } from './ui/button';
 import { deleteThread, getThreads } from '@/frontend/dexie/queries';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link, useNavigate, useParams } from 'react-router';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { memo } from 'react';
+import { useTitleLoadingStore } from '@/frontend/stores/TitleLoadingStore';
 
 export default function ChatSidebar() {
   const { id } = useParams();
   const navigate = useNavigate();
   const threads = useLiveQuery(() => getThreads(), []);
+  const isLoading = useTitleLoadingStore((state) => state.isLoading);
 
   return (
     <Sidebar>
@@ -45,7 +47,12 @@ export default function ChatSidebar() {
                           navigate(`/chat/${thread.id}`);
                         }}
                       >
-                        <span className="truncate block">{thread.title}</span>
+                        <span className="truncate block flex items-center gap-2">
+                          {thread.title}
+                          {isLoading(thread.id) && (
+                            <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                          )}
+                        </span>
                         <Button
                           variant="ghost"
                           size="icon"

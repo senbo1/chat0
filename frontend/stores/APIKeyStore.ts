@@ -11,6 +11,7 @@ type APIKeyStore = {
   setKeys: (newKeys: Partial<APIKeys>) => void;
   hasRequiredKeys: () => boolean;
   getKey: (provider: Provider) => string | null;
+  getFirstAvailableKey: () => { provider: Provider; key: string } | null;
 };
 
 type StoreWithPersist = Mutate<
@@ -48,12 +49,21 @@ export const useAPIKeyStore = create<APIKeyStore>()(
       },
 
       hasRequiredKeys: () => {
-        return !!get().keys.google;
+        const keys = get().keys;
+        return !!keys.google || !!keys.openrouter || !!keys.openai;
       },
 
       getKey: (provider) => {
         const key = get().keys[provider];
         return key ? key : null;
+      },
+
+      getFirstAvailableKey: () => {
+        const keys = get().keys;
+        if (keys.google) return { provider: 'google' as Provider, key: keys.google };
+        if (keys.openai) return { provider: 'openai' as Provider, key: keys.openai };
+        if (keys.openrouter) return { provider: 'openrouter' as Provider, key: keys.openrouter };
+        return null;
       },
     }),
     {
