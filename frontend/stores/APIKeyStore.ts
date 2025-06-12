@@ -1,5 +1,6 @@
 import { create, Mutate, StoreApi } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { validateAPIKey as validateAPIKeyService, APIValidationResult } from '@/lib/apiValidationService';
 
 export const PROVIDERS = ['google', 'openrouter', 'openai'] as const;
 export type Provider = (typeof PROVIDERS)[number];
@@ -11,6 +12,8 @@ type APIKeyStore = {
   setKeys: (newKeys: Partial<APIKeys>) => void;
   hasRequiredKeys: () => boolean;
   getKey: (provider: Provider) => string | null;
+  validateKeyAPI: (provider: Provider) => Promise<APIValidationResult>;
+  validateAllKeysAPI: () => Promise<Record<Provider, APIValidationResult>>;
 };
 
 type StoreWithPersist = Mutate<
@@ -54,6 +57,31 @@ export const useAPIKeyStore = create<APIKeyStore>()(
       getKey: (provider) => {
         const key = get().keys[provider];
         return key ? key : null;
+      },
+
+      validateKeyAPI: async (provider) => {
+        const key = get().keys[provider];
+        if (!key || key.trim().length === 0) {
+          return { isValid: false, error: `${provider} API key is required` };
+        }
+        return validateAPIKeyService(provider, key);
+      },
+
+      validateAllKeysAPI: async () => {
+        const keys = get().keys;
+        const results: Record<Provider, APIValidationResult> = {} as Record<Provider, APIValidationResult>;
+        
+        const validationPromises = PROVIDERS.map(async (provider) => {
+          const key = keys[provider];
+          if (key && key.trim().length > 0) {
+            results[provider] = await validateAPIKeyService(provider, key);
+          } else {
+            results[provider] = { isValid: false, error: `${provider} API key is required` };
+          }
+        });
+
+        await Promise.all(validationPromises);
+        return results;
       },
     }),
     {
