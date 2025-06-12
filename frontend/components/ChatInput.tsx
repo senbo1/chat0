@@ -1,5 +1,5 @@
-import { ChevronDown, Check, ArrowUpIcon } from 'lucide-react';
-import { memo, useCallback, useMemo } from 'react';
+import { ChevronDown, Check, ArrowUpIcon, Plus, CircleX } from 'lucide-react';
+import { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { Textarea } from '@/frontend/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Button } from '@/frontend/components/ui/button';
@@ -18,11 +18,12 @@ import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { useModelStore } from '@/frontend/stores/ModelStore';
 import { AI_MODELS, AIModel, getModelConfig } from '@/lib/models';
 import KeyPrompt from '@/frontend/components/KeyPrompt';
-import { UIMessage } from 'ai';
+import {  UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
-import { StopIcon } from './ui/icons';
-import { toast } from 'sonner';
+import { StopIcon } from './ui/icons'; 
 import { useMessageSummary } from '../hooks/useMessageSummary';
+import { useFileHandler } from '../hooks/useFileHandler';
+import FilePreview from './filePreview';
 
 interface ChatInputProps {
   threadId: string;
@@ -65,6 +66,9 @@ function PureChatInput({
     maxHeight: 200,
   });
 
+  const { fileList, fileUrls, contentTypes,  handlePaste, handleFileChange, clearFiles , handleDragOver  , handleDrop} = useFileHandler();
+
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -99,10 +103,11 @@ function PureChatInput({
 
     const userMessage = createUserMessage(messageId, currentInput.trim());
     await createMessage(threadId, userMessage);
-
-    append(userMessage);
+    append(userMessage, { experimental_attachments: fileList })
     setInput('');
+    clearFiles();
     adjustHeight(true);
+
   }, [
     input,
     status,
@@ -113,7 +118,8 @@ function PureChatInput({
     textareaRef,
     threadId,
     complete,
-  ]);
+  ]); 
+
 
   if (!canChat) {
     return <KeyPrompt />;
@@ -137,6 +143,14 @@ function PureChatInput({
         <div className="relative">
           <div className="flex flex-col">
             <div className="bg-secondary overflow-y-auto max-h-[300px]">
+
+              <FilePreview
+                clearFiles={clearFiles}
+                contentTypes={contentTypes}
+                fileList={fileList}
+                fileUrls={fileUrls}
+              />
+
               <Textarea
                 id="chat-input"
                 value={input}
@@ -152,6 +166,9 @@ function PureChatInput({
                 ref={textareaRef}
                 onKeyDown={handleKeyDown}
                 onChange={handleInputChange}
+                onPaste={handlePaste}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
                 aria-label="Chat message input"
                 aria-describedby="chat-input-description"
               />
@@ -163,12 +180,18 @@ function PureChatInput({
             <div className="h-14 flex items-center px-2">
               <div className="flex items-center justify-between w-full">
                 <ChatModelDropdown />
+                <div className="flex gap-2 items-center">
+                  <input onChange={handleFileChange} className='hidden' type="file" name="" id="fileChange" />
+                  <label htmlFor="fileChange">
+                    <Plus />
+                  </label>
 
-                {status === 'submitted' || status === 'streaming' ? (
-                  <StopButton stop={stop} />
-                ) : (
-                  <SendButton onSubmit={handleSubmit} disabled={isDisabled} />
-                )}
+                  {status === 'submitted' || status === 'streaming' ? (
+                    <StopButton stop={stop} />
+                  ) : (
+                    <SendButton onSubmit={handleSubmit} disabled={isDisabled} />
+                  )}
+                </div>
               </div>
             </div>
           </div>
