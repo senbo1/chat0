@@ -11,6 +11,12 @@ Blazingly-Fast, Open-source, and Free AI Chat App.
 - Multi-model support - Google Gemini, OpenAI, DeepSeek and more will be added soon
 - Optimized React codebase (No Unnecessary re-renders)
 
+# Deploy
+
+Deploying **Chat0** is simple and fast with Vercel's one-click deployment option. Vercel provides a powerful and scalable environment for your project.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/senbo1/chat0)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
