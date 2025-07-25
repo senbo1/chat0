@@ -117,6 +117,7 @@ function PureChatInput({
     textareaRef,
     threadId,
     complete,
+    selectedModel,
   ]);
 
   if (!canChat) {
