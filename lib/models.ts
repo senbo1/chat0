@@ -1,4 +1,5 @@
 import { Provider } from '@/frontend/stores/APIKeyStore';
+import { MODEL_PROVIDERS } from './constants';
 
 export const AI_MODELS = [
   'Deepseek R1 0528',
@@ -20,32 +21,32 @@ export type ModelConfig = {
 export const MODEL_CONFIGS = {
   'Deepseek R1 0528': {
     modelId: 'deepseek/deepseek-r1-0528:free',
-    provider: 'openrouter',
+    provider: MODEL_PROVIDERS.OPEN_ROUTER,
     headerKey: 'X-OpenRouter-API-Key',
   },
   'Deepseek V3': {
     modelId: 'deepseek/deepseek-chat-v3-0324:free',
-    provider: 'openrouter',
+    provider: MODEL_PROVIDERS.OPEN_ROUTER,
     headerKey: 'X-OpenRouter-API-Key',
   },
   'Gemini 2.5 Pro': {
     modelId: 'gemini-2.5-pro-preview-05-06',
-    provider: 'google',
+    provider: MODEL_PROVIDERS.GOOGLE,
     headerKey: 'X-Google-API-Key',
   },
   'Gemini 2.5 Flash': {
     modelId: 'gemini-2.5-flash-preview-04-17',
-    provider: 'google',
+    provider: MODEL_PROVIDERS.GOOGLE,
     headerKey: 'X-Google-API-Key',
   },
   'GPT-4o': {
     modelId: 'gpt-4o',
-    provider: 'openai',
+    provider: MODEL_PROVIDERS.OPEN_AI,
     headerKey: 'X-OpenAI-API-Key',
   },
   'GPT-4.1-mini': {
     modelId: 'gpt-4.1-mini',
-    provider: 'openai',
+    provider: MODEL_PROVIDERS.OPEN_AI,
     headerKey: 'X-OpenAI-API-Key',
   },
 } as const satisfies Record<AIModel, ModelConfig>;

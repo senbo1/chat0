@@ -2,6 +2,7 @@ import { useCompletion } from '@ai-sdk/react';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { toast } from 'sonner';
 import { createMessageSummary, updateThread } from '@/frontend/dexie/queries';
+import { MODEL_PROVIDERS } from '@/lib/constants';
 
 interface MessageSummaryPayload {
   title: string;
@@ -15,8 +16,8 @@ export const useMessageSummary = () => {
 
   const { complete, isLoading } = useCompletion({
     api: '/api/completion',
-    ...(getKey('google') && {
-      headers: { 'X-Google-API-Key': getKey('google')! },
+    ...(getKey(MODEL_PROVIDERS.GOOGLE) && {
+      headers: { 'X-Google-API-Key': getKey(MODEL_PROVIDERS.GOOGLE)! },
     }),
     onResponse: async (response) => {
       try {

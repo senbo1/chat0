@@ -23,6 +23,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { StopIcon } from './ui/icons';
 import { toast } from 'sonner';
 import { useMessageSummary } from '../hooks/useMessageSummary';
+import { MODEL_PROVIDERS } from '@/lib/constants';
 
 interface ChatInputProps {
   threadId: string;
@@ -67,6 +68,7 @@ function PureChatInput({
 
   const navigate = useNavigate();
   const { id } = useParams();
+  const { selectedModel } = useModelStore();
 
   const isDisabled = useMemo(
     () => !input.trim() || status === 'streaming' || status === 'submitted',
@@ -87,14 +89,16 @@ function PureChatInput({
 
     const messageId = uuidv4();
 
-    if (!id) {
-      navigate(`/chat/${threadId}`);
-      await createThread(threadId);
-      complete(currentInput.trim(), {
-        body: { threadId, messageId, isTitle: true },
-      });
-    } else {
-      complete(currentInput.trim(), { body: { messageId, threadId } });
+    if (getModelConfig(selectedModel).provider === MODEL_PROVIDERS.GOOGLE) {
+      if (!id) {
+        navigate(`/chat/${threadId}`);
+        await createThread(threadId);
+        complete(currentInput.trim(), {
+          body: { threadId, messageId, isTitle: true },
+        });
+      } else {
+        complete(currentInput.trim(), { body: { messageId, threadId } });
+      }
     }
 
     const userMessage = createUserMessage(messageId, currentInput.trim());
