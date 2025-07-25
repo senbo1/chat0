@@ -12,6 +12,9 @@ import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
 import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { toast } from 'sonner';
+import { useModelStore } from '../stores/ModelStore';
+import { MODEL_PROVIDERS } from '@/lib/constants';
+import { getModelConfig } from '@/lib/models';
 
 export default function MessageEditor({
   threadId,
@@ -32,11 +35,12 @@ export default function MessageEditor({
 }) {
   const [draftContent, setDraftContent] = useState(content);
   const getKey = useAPIKeyStore((state) => state.getKey);
+  const { selectedModel } = useModelStore();
 
   const { complete } = useCompletion({
     api: '/api/completion',
-    ...(getKey('google') && {
-      headers: { 'X-Google-API-Key': getKey('google')! },
+    ...(getKey(MODEL_PROVIDERS.GOOGLE) && {
+      headers: { 'X-Google-API-Key': getKey(MODEL_PROVIDERS.GOOGLE)! },
     }),
     onResponse: async (response) => {
       try {
@@ -85,12 +89,14 @@ export default function MessageEditor({
         return messages;
       });
 
-      complete(draftContent, {
-        body: {
-          messageId: updatedMessage.id,
-          threadId,
-        },
-      });
+      if (getModelConfig(selectedModel).provider === MODEL_PROVIDERS.GOOGLE) {
+        complete(draftContent, {
+          body: {
+            messageId: updatedMessage.id,
+            threadId,
+          },
+        });
+      }
       setMode('view');
 
       // stop the current stream if any

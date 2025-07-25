@@ -18,9 +18,7 @@ import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
 import { Badge } from './ui/badge';
 
 const formSchema = z.object({
-  google: z.string().trim().min(1, {
-    message: 'Google API key is required for Title Generation',
-  }),
+  google: z.string().trim().optional(),
   openrouter: z.string().trim().optional(),
   openai: z.string().trim().optional(),
 });
@@ -81,7 +79,6 @@ const Form = () => {
         placeholder="AIza..."
         register={register}
         error={errors.google}
-        required
       />
 
       <ApiKeyField
