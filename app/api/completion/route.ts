@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   try {
     const { text: title } = await generateText({
-      model: google('gemini-2.5-flash-preview-04-17'),
+      model: google('gemini-2.5-flash'),
       system: `\n
       - you will generate a short title based on the first message a user begins a conversation with
       - ensure it is not more than 80 characters long
