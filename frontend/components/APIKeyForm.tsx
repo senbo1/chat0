@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldError, useForm, UseFormRegister } from 'react-hook-form';
@@ -14,8 +14,10 @@ import {
 } from '@/frontend/components/ui/card';
 import { Key } from 'lucide-react';
 import { toast } from 'sonner';
-import { useAPIKeyStore } from '@/frontend/stores/APIKeyStore';
+import { useAPIKeyStore, Provider } from '@/frontend/stores/APIKeyStore';
 import { Badge } from './ui/badge';
+import { APIValidationResult, validateAPIKey as validateAPIKeyService } from '@/lib/apiValidationService';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   google: z.string().trim().min(1, {
@@ -48,27 +50,82 @@ export default function APIKeyForm() {
 
 const Form = () => {
   const { keys, setKeys } = useAPIKeyStore();
+  const [apiValidationResults, setApiValidationResults] = useState<Record<string, APIValidationResult>>({});
+  const [validatingKeys, setValidatingKeys] = useState<Set<string>>(new Set());
 
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: keys,
   });
 
+  const watchedValues = watch();
+
   useEffect(() => {
     reset(keys);
   }, [keys, reset]);
 
+  useEffect(() => {
+    Object.keys(watchedValues).forEach(provider => {
+      if (apiValidationResults[provider]) {
+        setApiValidationResults(prev => {
+          const newResults = { ...prev };
+          delete newResults[provider];
+          return newResults;
+        });
+      }
+    });
+  }, [watchedValues, apiValidationResults]);
+
+
+  const validateWithAPI = useCallback(async (formValues: FormValues) => {
+    const providersToValidate = Object.entries(formValues).filter(([, value]) => 
+      value && value.trim().length > 0
+    ) as [Provider, string][];
+
+    setValidatingKeys(new Set(providersToValidate.map(([provider]) => provider)));
+    
+    const results: Record<string, APIValidationResult> = {};
+    
+    await Promise.all(
+      providersToValidate.map(async ([provider, apiKey]) => {
+        try {
+          results[provider] = await validateAPIKeyService(provider, apiKey);
+        } catch {
+          results[provider] = { isValid: false, error: 'Validation failed' };
+        }
+      })
+    );
+    
+    setApiValidationResults(results);
+    setValidatingKeys(new Set());
+    
+    return results;
+  }, []);
+
   const onSubmit = useCallback(
-    (values: FormValues) => {
+    async (values: FormValues) => {
+      // First validate with APIs
+      const validationResults = await validateWithAPI(values);
+      
+      // Check if any validation failed
+      const hasErrors = Object.values(validationResults).some(result => !result.isValid);
+      
+      if (hasErrors) {
+        toast.error('Please fix API key errors before saving');
+        return;
+      }
+      
+      // Only save if all validations pass
       setKeys(values);
       toast.success('API keys saved successfully');
     },
-    [setKeys]
+    [setKeys, validateWithAPI]
   );
 
   return (
@@ -81,6 +138,8 @@ const Form = () => {
         placeholder="AIza..."
         register={register}
         error={errors.google}
+        apiValidation={apiValidationResults.google}
+        isValidating={validatingKeys.has('google')}
         required
       />
 
@@ -92,6 +151,8 @@ const Form = () => {
         placeholder="sk-or-..."
         register={register}
         error={errors.openrouter}
+        apiValidation={apiValidationResults.openrouter}
+        isValidating={validatingKeys.has('openrouter')}
       />
 
       <ApiKeyField
@@ -102,6 +163,8 @@ const Form = () => {
         placeholder="sk-..."
         register={register}
         error={errors.openai}
+        apiValidation={apiValidationResults.openai}
+        isValidating={validatingKeys.has('openai')}
       />
 
       <Button type="submit" className="w-full" disabled={!isDirty}>
@@ -118,6 +181,8 @@ interface ApiKeyFieldProps {
   models: string[];
   placeholder: string;
   error?: FieldError | undefined;
+  apiValidation?: APIValidationResult;
+  isValidating?: boolean;
   required?: boolean;
   register: UseFormRegister<FormValues>;
 }
@@ -129,9 +194,32 @@ const ApiKeyField = ({
   placeholder,
   models,
   error,
+  apiValidation,
+  isValidating,
   required,
   register,
-}: ApiKeyFieldProps) => (
+}: ApiKeyFieldProps) => {
+  const getInputClassName = () => {
+    if (error) return 'border-red-500';
+    if (apiValidation?.isValid === false) return 'border-red-500';
+    if (apiValidation?.isValid === true) return 'border-green-500';
+    return '';
+  };
+
+  const getValidationIcon = () => {
+    if (isValidating) {
+      return <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />;
+    }
+    if (apiValidation?.isValid === true) {
+      return <CheckCircle className="w-4 h-4 text-green-500" />;
+    }
+    if (apiValidation?.isValid === false) {
+      return <XCircle className="w-4 h-4 text-red-500" />;
+    }
+    return null;
+  };
+
+  return (
   <div className="flex flex-col gap-2">
     <label
       htmlFor={id}
@@ -146,12 +234,17 @@ const ApiKeyField = ({
       ))}
     </div>
 
-    <Input
-      id={id}
-      placeholder={placeholder}
-      {...register(id as keyof FormValues)}
-      className={error ? 'border-red-500' : ''}
-    />
+    <div className="relative">
+      <Input
+        id={id}
+        placeholder={placeholder}
+        {...register(id as keyof FormValues)}
+        className={getInputClassName()}
+      />
+      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+        {getValidationIcon()}
+      </div>
+    </div>
 
     <a
       href={linkUrl}
@@ -161,8 +254,11 @@ const ApiKeyField = ({
       Create {label.split(' ')[0]} API Key
     </a>
 
-    {error && (
-      <p className="text-[0.8rem] font-medium text-red-500">{error.message}</p>
+    {(error || (apiValidation && !apiValidation.isValid)) && (
+      <p className="text-[0.8rem] font-medium text-red-500">
+        {error?.message || apiValidation?.error}
+      </p>
     )}
   </div>
-);
+  );
+};
