@@ -29,12 +29,12 @@ export const MODEL_CONFIGS = {
     headerKey: 'X-OpenRouter-API-Key',
   },
   'Gemini 2.5 Pro': {
-    modelId: 'gemini-2.5-pro-preview-05-06',
+    modelId: 'gemini-2.5-pro',
     provider: 'google',
     headerKey: 'X-Google-API-Key',
   },
   'Gemini 2.5 Flash': {
-    modelId: 'gemini-2.5-flash-preview-04-17',
+    modelId: 'gemini-2.5-flash',
     provider: 'google',
     headerKey: 'X-Google-API-Key',
   },
