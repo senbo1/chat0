@@ -41,4 +41,5 @@ yarn-error.log*
 next-env.d.ts
 
 #cloudflare
-.open-next
+.open-next 
+package-lock.json
