@@ -1,4 +1,4 @@
-import { ChevronDown, Check, ArrowUpIcon } from 'lucide-react';
+import { ChevronDown, Check, ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 import { Textarea } from '@/frontend/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,8 @@ interface ChatInputProps {
   setInput: UseChatHelpers['setInput'];
   append: UseChatHelpers['append'];
   stop: UseChatHelpers['stop'];
+  scrollToBottom: () => void;
+  isAtBottom: boolean;
 }
 
 interface StopButtonProps {
@@ -41,7 +43,9 @@ interface SendButtonProps {
   onSubmit: () => void;
   disabled: boolean;
 }
-
+interface ScrollButtonProps {
+  scrollToBottom: () => void;
+}
 const createUserMessage = (id: string, text: string): UIMessage => ({
   id,
   parts: [{ type: 'text', text }],
@@ -57,6 +61,8 @@ function PureChatInput({
   setInput,
   append,
   stop,
+  scrollToBottom,
+  isAtBottom,
 }: ChatInputProps) {
   const canChat = useAPIKeyStore((state) => state.hasRequiredKeys());
 
@@ -133,6 +139,9 @@ function PureChatInput({
 
   return (
     <div className="fixed bottom-0 w-full max-w-3xl">
+      <div className="flex justify-center pb-4">
+        {!isAtBottom && <ScrollButton scrollToBottom={scrollToBottom} />}
+      </div>
       <div className="bg-secondary rounded-t-[20px] p-2 pb-0 w-full">
         <div className="relative">
           <div className="flex flex-col">
@@ -181,6 +190,7 @@ function PureChatInput({
 const ChatInput = memo(PureChatInput, (prevProps, nextProps) => {
   if (prevProps.input !== nextProps.input) return false;
   if (prevProps.status !== nextProps.status) return false;
+  if (prevProps.isAtBottom !== nextProps.isAtBottom) return false;
   return true;
 });
 
@@ -273,6 +283,16 @@ const PureSendButton = ({ onSubmit, disabled }: SendButtonProps) => {
     </Button>
   );
 };
+
+const PureScrollButton = ({ scrollToBottom }: ScrollButtonProps) => {
+  return (
+    <Button className="rounded-full h-8 w-8" variant="default" size="icon" onClick={scrollToBottom} aria-label="Scroll to bottom">
+      <ArrowDownIcon size={18} />
+    </Button>
+  );
+};
+
+const ScrollButton = memo(PureScrollButton);
 
 const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   return prevProps.disabled === nextProps.disabled;
