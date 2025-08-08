@@ -69,10 +69,24 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
   });
 
   return (
-    <div className="relative w-full">
+    <div className="w-full overflow-hidden h-screen">
       <ChatSidebarTrigger />
+      <ThemeToggler />
+      <Button
+        onClick={handleToggleNavigator}
+        variant="outline"
+        size="icon"
+        className="fixed right-16 top-4 z-20"
+        aria-label={
+          isNavigatorVisible
+            ? 'Hide message navigator'
+            : 'Show message navigator'
+        }
+      >
+        <MessageSquareMore className="h-5 w-5" />
+      </Button>
       <main
-        className={`flex flex-col w-full max-w-3xl pt-10 pb-44 mx-auto transition-all duration-300 ease-in-out`}
+        className={`flex flex-col w-full mx-auto relative transition-all duration-300 ease-in-out max-h-screen h-screen`}
       >
         <Messages
           threadId={threadId}
@@ -93,20 +107,6 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
           stop={stop}
         />
       </main>
-      <ThemeToggler />
-      <Button
-        onClick={handleToggleNavigator}
-        variant="outline"
-        size="icon"
-        className="fixed right-16 top-4 z-20"
-        aria-label={
-          isNavigatorVisible
-            ? 'Hide message navigator'
-            : 'Show message navigator'
-        }
-      >
-        <MessageSquareMore className="h-5 w-5" />
-      </Button>
 
       <ChatNavigator
         threadId={threadId}

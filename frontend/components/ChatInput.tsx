@@ -132,9 +132,9 @@ function PureChatInput({
   };
 
   return (
-    <div className="fixed bottom-0 w-full max-w-3xl">
+    <div className="absolute w-full px- max-w-3xl m-auto bottom-0 md:left-1/2 md:-translate-x-[51%] shadow-xl">
       <div className="bg-secondary rounded-t-[20px] p-2 pb-0 w-full">
-        <div className="relative">
+        <div className="relative border">
           <div className="flex flex-col">
             <div className="bg-secondary overflow-y-auto max-h-[300px]">
               <Textarea
