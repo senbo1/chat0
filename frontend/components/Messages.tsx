@@ -26,21 +26,30 @@ function PureMessages({
   registerRef: (id: string, ref: HTMLDivElement | null) => void;
 }) {
   return (
-    <section className="flex flex-col space-y-12">
-      {messages.map((message, index) => (
-        <PreviewMessage
-          key={message.id}
-          threadId={threadId}
-          message={message}
-          isStreaming={status === 'streaming' && messages.length - 1 === index}
-          setMessages={setMessages}
-          reload={reload}
-          registerRef={registerRef}
-          stop={stop}
-        />
-      ))}
-      {status === 'submitted' && <MessageLoading />}
-      {error && <Error message={error.message} />}
+    <section
+      className="max-h-screen h-screen w-full xl:px-3 m-auto pb-18 md:pb-22 overflow-y-scroll"
+      style={{
+        height: 'calc(100vh - 10rem)',
+      }}
+    >
+      <div className="px-4 m-auto py-2 flex flex-col w-full md:max-w-xl lg:max-w-2xl border-y empty:hidden space-y-12">
+        {messages.map((message, index) => (
+          <PreviewMessage
+            key={message.id}
+            threadId={threadId}
+            message={message}
+            isStreaming={
+              status === 'streaming' && messages.length - 1 === index
+            }
+            setMessages={setMessages}
+            reload={reload}
+            registerRef={registerRef}
+            stop={stop}
+          />
+        ))}
+        {status === 'submitted' && <MessageLoading />}
+        {error && <Error message={error.message} />}
+      </div>
     </section>
   );
 }
