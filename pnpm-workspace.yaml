@@ -1,6 +1,16 @@
+packages:
+  - '.'
+# `allowBuilds` is the pnpm 11 name, `onlyBuiltDependencies` the pnpm 10 one.
+# Both are listed so build scripts also run on the older pnpm used by CI.
 allowBuilds:
   '@tailwindcss/oxide': true
   esbuild: true
   sharp: true
   unrs-resolver: true
   workerd: true
+onlyBuiltDependencies:
+  - '@tailwindcss/oxide'
+  - esbuild
+  - sharp
+  - unrs-resolver
+  - workerd
