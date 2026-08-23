@@ -12,6 +12,7 @@ import { SidebarTrigger, useSidebar } from './ui/sidebar';
 import { Button } from './ui/button';
 import { MessageSquareMore } from 'lucide-react';
 import { useChatNavigator } from '@/frontend/hooks/useChatNavigator';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ChatProps {
   threadId: string;
@@ -22,7 +23,8 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
   const { getKey } = useAPIKeyStore();
   const selectedModel = useModelStore((state) => state.selectedModel);
   const modelConfig = useModelStore((state) => state.getModelConfig());
-
+  const bottomDivRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState<boolean>(true);
   const {
     isNavigatorVisible,
     handleToggleNavigator,
@@ -68,6 +70,42 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
     },
   });
 
+  const scrollToBottom = useCallback((behaior: 'auto' | 'smooth') => {
+    bottomDivRef.current?.scrollIntoView({ behavior: behaior});
+  }, []);
+
+  useEffect(() => {
+    if (status === 'submitted') {
+      scrollToBottom('smooth');
+    }
+  }, [status, scrollToBottom]);
+
+  useEffect(() => {
+    if (!threadId) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom('auto');
+      });
+    });
+  }, [threadId]);
+  useEffect(() => {
+    scrollToBottom('smooth');
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (!bottomDivRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsAtBottom(entry.isIntersecting);
+      }
+    );
+
+    observer.observe(bottomDivRef.current);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="relative w-full">
       <ChatSidebarTrigger />
@@ -91,6 +129,14 @@ export default function Chat({ threadId, initialMessages }: ChatProps) {
           append={append}
           setInput={setInput}
           stop={stop}
+          scrollToBottom={() => scrollToBottom('smooth')}
+          isAtBottom={isAtBottom}
+        />
+        <div
+          ref={bottomDivRef}
+          className={
+            status === 'submitted' || status === 'streaming' ? 'h-[50vh]' : 'h-0'
+          }
         />
       </main>
       <ThemeToggler />
