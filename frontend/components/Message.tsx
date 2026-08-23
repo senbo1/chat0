@@ -1,12 +1,13 @@
 import { memo, useState } from 'react';
 import MarkdownRenderer from '@/frontend/components/MemoizedMarkdown';
 import { cn } from '@/lib/utils';
-import { UIMessage } from 'ai';
+import { Attachment, UIMessage } from 'ai';
 import equal from 'fast-deep-equal';
 import MessageControls from './MessageControls';
 import { UseChatHelpers } from '@ai-sdk/react';
 import MessageEditor from './MessageEditor';
 import MessageReasoning from './MessageReasoning';
+import { TextFilePreview } from './filePreview';
 
 function PureMessage({
   threadId,
@@ -67,7 +68,27 @@ function PureMessage({
                   stop={stop}
                 />
               )}
-              {mode === 'view' && <p>{part.text}</p>}
+              {mode === 'view' && (
+                <div className='flex flex-col gap-2'>
+                  {message.experimental_attachments
+                    ?.map((attachment, index) => (
+                      <section key={attachment.name}>
+                        {attachment.contentType?.startsWith("image/") ?
+                          <img className='w-12 h-12 rounded-md'
+                            key={`${message.id}-${index}`}
+                            src={attachment.url}
+                            alt={attachment.name}
+                          /> 
+                         : attachment.contentType?.startsWith("text/") ?
+                           <TextFilePreview fileList={undefined} /> :
+                          <iframe src={attachment.url} className="w-20 h-20 overflow-hidden" scrolling="no"></iframe>   
+
+                        }
+                      </section>
+                    ))}
+                  <p>{part.text}</p>
+                </div>
+              )}
 
               {mode === 'view' && (
                 <MessageControls
