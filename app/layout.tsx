@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import 'katex/dist/katex.min.css';
@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
   },
+};
+
+export const viewport: Viewport = {
+  maximumScale: 1,
 };
 
 export default function RootLayout({
