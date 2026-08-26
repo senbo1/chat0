@@ -1,7 +1,7 @@
 import { ArrowUpIcon } from 'lucide-react';
 
-import { Button } from '@/frontend/components/ui/button';
-import { Textarea } from '@/frontend/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export function BlankConversation() {
   return (

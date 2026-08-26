@@ -2,13 +2,13 @@
 
 import { PlusIcon } from 'lucide-react';
 
-import { Button } from '@/frontend/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarTrigger,
-} from '@/frontend/components/ui/sidebar';
+} from '@/components/ui/sidebar';
 
 type ChatSidebarProps = {
   onNewConversation: () => void;

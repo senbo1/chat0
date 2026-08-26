@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { ChatSidebar } from '@/frontend/components/ChatSidebar';
-import ThemeToggler from '@/frontend/components/ui/ThemeToggler';
+import ThemeToggler from '@/components/ui/ThemeToggler';
 import {
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
-} from '@/frontend/components/ui/sidebar';
+} from '@/components/ui/sidebar';
 
 export function ChatShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
