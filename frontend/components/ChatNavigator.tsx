@@ -3,6 +3,7 @@ import { getMessageSummaries } from '@/frontend/dexie/queries';
 import { memo } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MessageNavigatorProps {
   threadId: string;
@@ -17,10 +18,16 @@ function PureChatNavigator({
   isVisible,
   onClose,
 }: MessageNavigatorProps) {
+  const isMobile = useIsMobile();
   const messageSummaries = useLiveQuery(
     () => getMessageSummaries(threadId),
     [threadId]
   );
+
+  const handleSelectMessage = (messageId: string) => {
+    scrollToMessage(messageId);
+    if (isMobile) onClose();
+  };
 
   return (
     <>
@@ -55,9 +62,7 @@ function PureChatNavigator({
               {messageSummaries?.map((summary) => (
                 <li
                   key={summary.id}
-                  onClick={() => {
-                    scrollToMessage(summary.messageId);
-                  }}
+                  onClick={() => handleSelectMessage(summary.messageId)}
                   className="cursor-pointer hover:text-foreground transition-colors"
                 >
                   {summary.content.slice(0, 100)}
