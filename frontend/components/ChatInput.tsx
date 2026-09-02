@@ -50,6 +50,12 @@ const createUserMessage = (id: string, text: string): UIMessage => ({
   createdAt: new Date(),
 });
 
+const PROVIDER_LABELS: Record<string, string> = {
+  google: 'Google',
+  openrouter: 'OpenRouter',
+  openai: 'OpenAI',
+};
+
 function PureChatInput({
   threadId,
   input,
@@ -120,7 +126,7 @@ function PureChatInput({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSubmit();
     }
@@ -217,22 +223,34 @@ const PureChatModelDropdown = () => {
         >
           {AI_MODELS.map((model) => {
             const isEnabled = isModelEnabled(model);
+            const provider = getModelConfig(model).provider;
             return (
               <DropdownMenuItem
                 key={model}
                 onSelect={() => isEnabled && setModel(model)}
                 disabled={!isEnabled}
+                title={
+                  isEnabled
+                    ? undefined
+                    : `Requires ${PROVIDER_LABELS[provider]} API key`
+                }
                 className={cn(
                   'flex items-center justify-between gap-2',
                   'cursor-pointer'
                 )}
               >
                 <span>{model}</span>
-                {selectedModel === model && (
-                  <Check
-                    className="w-4 h-4 text-blue-500"
-                    aria-label="Selected"
-                  />
+                {!isEnabled ? (
+                  <span className="text-xs text-muted-foreground">
+                    Add {PROVIDER_LABELS[provider]} key
+                  </span>
+                ) : (
+                  selectedModel === model && (
+                    <Check
+                      className="w-4 h-4 text-blue-500"
+                      aria-label="Selected"
+                    />
+                  )
                 )}
               </DropdownMenuItem>
             );

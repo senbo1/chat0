@@ -66,7 +66,8 @@ export default function ChatSidebar() {
                         <Button
                           variant='ghost'
                           size='icon'
-                          className='hidden group-hover/thread:flex ml-auto h-7 w-7'
+                          className='flex ml-auto h-7 w-7 opacity-100 md:opacity-0 md:group-hover/thread:opacity-100 transition-opacity'
+                          aria-label={`Delete ${thread.title}`}
                           onClick={async (event) => {
                             event.preventDefault();
                             event.stopPropagation();
