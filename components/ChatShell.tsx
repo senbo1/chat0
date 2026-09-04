@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { ChatSidebar } from '@/frontend/components/ChatSidebar';
+import { ChatSidebar } from '@/components/ChatSidebar';
 import ThemeToggler from '@/components/ui/ThemeToggler';
 import {
   SidebarProvider,

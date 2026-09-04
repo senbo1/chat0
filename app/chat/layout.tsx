@@ -1,4 +1,4 @@
-import { ChatShell } from '@/frontend/components/ChatShell';
+import { ChatShell } from '@/components/ChatShell';
 
 export default function ChatLayout({
   children,
