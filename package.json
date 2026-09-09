@@ -7,7 +7,9 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "convex dev --start 'pnpm dev:web'",
+    "dev:web": "next dev",
+    "dev:convex": "convex dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -18,6 +20,7 @@
     "@base-ui/react": "^1.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "convex": "^1.45.0",
     "katex": "^0.16.22",
     "lucide-react": "^0.577.0",
     "marked": "^17.0.5",

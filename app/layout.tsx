@@ -4,6 +4,7 @@ import './globals.css';
 import 'katex/dist/katex.min.css';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ConvexClientProvider } from '@/components/ConvexClientProvider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -43,7 +44,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>{children}</TooltipProvider>
+          <ConvexClientProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

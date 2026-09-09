@@ -12,5 +12,7 @@ export default defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    '.convex/**',
+    'convex/_generated/**',
   ]),
 ]);
