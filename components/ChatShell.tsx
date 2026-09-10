@@ -8,7 +8,6 @@ import ThemeToggler from '@/components/ui/ThemeToggler';
 import {
   SidebarProvider,
   SidebarTrigger,
-  useSidebar,
 } from '@/components/ui/sidebar';
 
 export function ChatShell({ children }: { children: React.ReactNode }) {
@@ -49,14 +48,10 @@ export function ChatShell({ children }: { children: React.ReactNode }) {
 }
 
 function ShellSidebarTrigger() {
-  const { state } = useSidebar();
-
   return (
     <>
       <SidebarTrigger className="fixed left-4 top-4 z-20 md:hidden" />
-      {state === 'collapsed' ? (
-        <SidebarTrigger className="fixed left-4 top-4 z-20 hidden md:inline-flex" />
-      ) : null}
+      <SidebarTrigger className="invisible fixed left-4 top-4 z-20 hidden opacity-0 transition-[opacity,visibility] delay-0 duration-0 peer-data-[state=collapsed]:delay-100 peer-data-[state=collapsed]:visible peer-data-[state=collapsed]:opacity-100 md:inline-flex" />
     </>
   );
 }

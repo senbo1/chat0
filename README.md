@@ -33,6 +33,30 @@ Add tables in `convex/schema.ts` and backend functions in `convex/`. The app's `
 
 Press `Ctrl+Shift+O` or `Command+Shift+O` to return to a blank conversation.
 
+## Anonymous authentication
+
+Authentication uses the [Convex Better Auth component](https://labs.convex.dev/better-auth/framework-guides/next) and Better Auth's [anonymous plugin](https://better-auth.com/docs/plugins/anonymous). Users and sessions live in the component's tables.
+
+With the local Convex backend running, configure its environment once:
+
+```bash
+openssl rand -base64 32 | pnpm exec convex env set BETTER_AUTH_SECRET
+pnpm exec convex env set SITE_URL http://localhost:3000
+```
+
+Set `NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211` in `.env.local` alongside `NEXT_PUBLIC_CONVEX_URL`. For hosted deployments, use the deployment's HTTP actions URL (ending in `.convex.site`) and set `SITE_URL` to the app's actual origin. Keep `BETTER_AUTH_SECRET` on the Convex backend only.
+
+Client components can start a guest session explicitly:
+
+```tsx
+import { authClient } from '@/lib/auth-client';
+
+const { data, error } = await authClient.signIn.anonymous();
+// Handle error before continuing. Read the session with authClient.useSession().
+```
+
+The provider passes the session to Convex automatically. Backend functions can use `authComponent.getAuthUser(ctx)` from `convex/auth.ts` to require the current user and check ownership before accessing app data. Anonymous users have `isAnonymous: true`; the app does not create a guest account automatically on page load.
+
 ## Checks
 
 ```bash
