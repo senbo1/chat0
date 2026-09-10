@@ -1,48 +1,15 @@
-'use client';
-
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
 import { ChatSidebar } from '@/components/ChatSidebar';
-import ThemeToggler from '@/components/ui/ThemeToggler';
 import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 
 export function ChatShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [conversationKey, setConversationKey] = useState(0);
-
-  const startNewConversation = useCallback(() => {
-    setConversationKey((key) => key + 1);
-    router.push('/chat');
-  }, [router]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.shiftKey &&
-        event.key.toLowerCase() === 'o'
-      ) {
-        event.preventDefault();
-        startNewConversation();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [startNewConversation]);
-
   return (
     <SidebarProvider>
-      <ChatSidebar onNewConversation={startNewConversation} />
+      <ChatSidebar />
       <ShellSidebarTrigger />
-      <div className="relative min-w-0 flex-1" key={conversationKey}>
-        {children}
-      </div>
-      <ThemeToggler />
+      <div className="relative min-w-0 flex-1">{children}</div>
     </SidebarProvider>
   );
 }

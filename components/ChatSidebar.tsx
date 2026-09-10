@@ -1,8 +1,9 @@
 'use client';
 
 import { PlusIcon } from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -10,11 +11,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 
-type ChatSidebarProps = {
-  onNewConversation: () => void;
-};
-
-export function ChatSidebar({ onNewConversation }: ChatSidebarProps) {
+export function ChatSidebar() {
   return (
     <Sidebar>
       <div className="flex h-full flex-col p-2">
@@ -23,11 +20,10 @@ export function ChatSidebar({ onNewConversation }: ChatSidebarProps) {
             <h1 className="text-2xl font-bold">Chat0</h1>
             <SidebarTrigger />
           </div>
-          <Button className="w-full" onClick={onNewConversation}>
+          <Link className={buttonVariants({ className: 'w-full' })} href="/chat">
             <PlusIcon size={16} />
             New chat
-            <kbd className="ml-auto text-xs font-normal opacity-70">⌘ ⇧ O</kbd>
-          </Button>
+          </Link>
         </SidebarHeader>
         <SidebarContent />
       </div>
